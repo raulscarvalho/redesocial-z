@@ -1,4 +1,3 @@
-
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
@@ -15,7 +14,7 @@ app.use(cors());
 app.use(express.json());
 
 app.get('/', (req, res) => {
-  res.send('API do Blog rodando!');
+  res.send('API rodando!');
 });
 
 app.use('/api/posts', require('./routes/postRoutes'));

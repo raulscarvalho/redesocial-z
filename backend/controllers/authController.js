@@ -1,16 +1,16 @@
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken'); 
+const jwt = require('jsonwebtoken');
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: '30d', 
+    expiresIn: '30d',
   });
 };
 
 /**
- * @route   
- * @desc    
+ * @route
+ * @desc
  */
 const registrarUsuario = async (req, res) => {
   try {
@@ -31,7 +31,7 @@ const registrarUsuario = async (req, res) => {
     res.status(201).json({
       _id: usuario._id,
       username: usuario.username,
-      token: token, 
+      token: token,
     });
 
   } catch (err) {
@@ -41,8 +41,8 @@ const registrarUsuario = async (req, res) => {
 };
 
 /**
- * @route   
- * @desc    
+ * @route
+ * @desc
  */
 const loginUsuario = async (req, res) => {
   const { username, password } = req.body;
@@ -54,12 +54,12 @@ const loginUsuario = async (req, res) => {
 
     const usuario = await User.findOne({ username });
     if (!usuario) {
-      return res.status(400).json({ msg: 'Credenciais inválidas.' }); 
+      return res.status(400).json({ msg: 'Credenciais inválidas.' });
     }
 
     const isMatch = await bcrypt.compare(password, usuario.password);
     if (!isMatch) {
-      return res.status(400).json({ msg: 'Credenciais inválidas.' }); 
+      return res.status(400).json({ msg: 'Credenciais inválidas.' });
     }
 
     const token = generateToken(usuario._id);
@@ -74,7 +74,6 @@ const loginUsuario = async (req, res) => {
     res.status(500).send('Erro no Servidor');
   }
 };
-
 
 module.exports = {
   registrarUsuario,

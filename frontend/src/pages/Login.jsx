@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext'; 
 
-const Cadastro = () => {
+const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const { registro } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -22,25 +22,25 @@ const Cadastro = () => {
 
     try {
       setLoading(true);
-      await registro(username, password); 
+      await login(username, password);
 
       navigate('/'); 
 
     } catch (err) {
+      setLoading(false);
+
       if (err.response && err.response.data && err.response.data.msg) {
         setError(err.response.data.msg);
       } else {
-        setError('Falha ao registrar. Tente novamente.');
+        setError('Falha ao fazer login. Tente novamente.');
       }
-      console.error('Erro no cadastro:', err);
-    } finally {
-      setLoading(false);
+      console.error('Erro no login:', err);
     }
   };
 
   return (
     <div>
-      <h2>Página de Cadastro</h2>
+      <h2>Página de Login</h2>
       <form onSubmit={handleSubmit}>
         <div style={{ marginBottom: '1rem' }}>
           <label htmlFor="username">Username:</label> <br />
@@ -60,16 +60,18 @@ const Cadastro = () => {
             onChange={(e) => setPassword(e.target.value)}
           />
         </div>
+
         {error && <p style={{ color: 'red' }}>{error}</p>}
+
         <button type="submit" disabled={loading}>
-          {loading ? 'Registrando...' : 'Registrar'}
+          {loading ? 'Entrando...' : 'Entrar'}
         </button>
       </form>
       <p style={{ marginTop: '1rem' }}>
-        Já tem uma conta? <Link to="/login">Faça login aqui</Link>.
+        Não tem uma conta? <Link to="/cadastro">Cadastre-se aqui</Link>.
       </p>
     </div>
   );
 };
 
-export default Cadastro;
+export default Login;

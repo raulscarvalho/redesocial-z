@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { fetchPostPorId, fetchComentariosDoPost, criarNovoComentario } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 const PostIndividual = () => {
-
   const { id } = useParams(); 
+  const { isAuthenticated } = useAuth();
 
   const [post, setPost] = useState(null);
   const [comentarios, setComentarios] = useState([]);
-  
   const [novoComentario, setNovoComentario] = useState('');
 
   const [loading, setLoading] = useState(true);
@@ -39,7 +39,7 @@ const PostIndividual = () => {
     };
 
     carregarDados();
-  }, [id]);
+  }, [id]); 
 
   const handleSubmitComentario = async (e) => {
     e.preventDefault();
@@ -49,13 +49,6 @@ const PostIndividual = () => {
       return;
     }
     
-    const usuarioId = '69091d6573cf9d0d48afb347';
-    
-    if (usuarioId === 'COLE_O_USER_ID_AQUI') {
-        setComentarioError('Erro de Configuração: Adicione o usuarioId no PostIndividual.jsx');
-        return;
-    }
-
     try {
       setComentarioLoading(true);
       setComentarioError(null);
@@ -63,20 +56,21 @@ const PostIndividual = () => {
       const dadosComentario = {
         texto: novoComentario,
         postId: id,
-        usuarioId: usuarioId
       };
 
-      const response = await criarNovoComentario(dadosComentario);
+      await criarNovoComentario(dadosComentario);
 
-      setNovoComentario('');
-      
       const resNovosComentarios = await fetchComentariosDoPost(id);
       setComentarios(resNovosComentarios.data);
-
+      setNovoComentario('');
 
     } catch (err) {
       console.error("Erro ao criar comentário:", err);
-      setComentarioError('Falha ao enviar o comentário.');
+      if (err.response && err.response.status === 401) {
+         setComentarioError('Você precisa estar logado para comentar.');
+      } else {
+         setComentarioError('Falha ao enviar o comentário.');
+      }
     } finally {
       setComentarioLoading(false);
     }
@@ -109,20 +103,26 @@ const PostIndividual = () => {
       <section>
         <h3>Comentários</h3>
 
-        <form onSubmit={handleSubmitComentario} style={{ marginBottom: '1.5rem' }}>
-          <textarea
-            rows="3"
-            style={{ width: '100%', maxWidth: '500px' }}
-            value={novoComentario}
-            onChange={(e) => setNovoComentario(e.target.value)}
-            placeholder="Escreva seu comentário..."
-          />
-          <br />
-          <button type="submit" disabled={comentarioLoading}>
-            {comentarioLoading ? 'Enviando...' : 'Enviar Comentário'}
-          </button>
-          {comentarioError && <p style={{ color: 'red', fontSize: '0.9rem' }}>{comentarioError}</p>}
-        </form>
+        {isAuthenticated ? (
+          <form onSubmit={handleSubmitComentario} style={{ marginBottom: '1.5rem' }}>
+            <textarea
+              rows="3"
+              style={{ width: '100%', maxWidth: '500px' }}
+              value={novoComentario}
+              onChange={(e) => setNovoComentario(e.target.value)}
+              placeholder="Escreva seu comentário..."
+            />
+            <br />
+            <button type="submit" disabled={comentarioLoading}>
+              {comentarioLoading ? 'Enviando...' : 'Enviar Comentario'}
+            </button>
+            {comentarioError && <p style={{ color: 'red', fontSize: '0.9rem' }}>{comentarioError}</p>}
+          </form>
+        ) : (
+          <p style={{ marginBottom: '1.5rem' }}>
+            <Link to="/login">Faça login</Link> para deixar um comentário.
+          </p>
+        )}
 
         <div>
           {comentarios.length > 0 ? (

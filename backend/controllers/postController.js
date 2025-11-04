@@ -1,32 +1,24 @@
 const Post = require('../models/Post');
-const User = require('../models/User'); 
+const User = require('../models/User');
 
 /**
- * @route  
- * @desc   
+ * @route
+ * @desc
  */
 const criarPost = async (req, res) => {
   try {
-    
-    const { titulo, texto, usuarioId } = req.body; 
-
-    if (!titulo || !texto || !usuarioId) {
-      return res.status(400).json({ msg: 'Por favor, inclua título, texto e ID do usuário.' });
-    }
-    
-    const usuario = await User.findById(usuarioId);
-    if (!usuario) {
-      return res.status(404).json({ msg: 'Usuário não encontrado.' });
-    }
-
+    const { titulo, texto } = req.body;
+    if (!titulo || !texto) {
+      return res.status(400).json({ msg: 'Por favor, inclua título e texto.' });
+    }    
     const novoPost = new Post({
       titulo,
       texto,
-      usuario: usuarioId, 
+      usuario: req.usuario._id,
     });
 
     const post = await novoPost.save();
-    res.status(201).json(post); 
+    res.status(201).json(post);
 
   } catch (err) {
     console.error(err.message);
@@ -35,8 +27,8 @@ const criarPost = async (req, res) => {
 };
 
 /**
- * @route   
- * @desc    
+ * @route
+ * @desc
  */
 const listarPosts = async (req, res) => {
   try {
@@ -52,8 +44,8 @@ const listarPosts = async (req, res) => {
 };
 
 /**
- * @route   
- * @desc    
+ * @route
+ * @desc
  */
 const obterPostPorId = async (req, res) => {
   try {

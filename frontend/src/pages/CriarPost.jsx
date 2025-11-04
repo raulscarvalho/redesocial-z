@@ -1,56 +1,47 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; 
-import { criarNovoPost } from '../services/api'; 
+import { useNavigate } from 'react-router-dom';
+import { criarNovoPost } from '../services/api';
 
 const CriarPost = () => {
+
   const [titulo, setTitulo] = useState('');
   const [texto, setTexto] = useState('');
-  
+
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault(); 
 
-    // validação do cliente - requisito
     if (!titulo || !texto) {
       setError('O título e o texto são obrigatórios.');
       return; 
     }
 
-    
-    const usuarioId = '69091d6573cf9d0d48afb347';
-    
-    if (usuarioId === 'COLE_O_USER_ID_AQUI') {
-        setError('Erro de Configuração: Por favor, adicione o usuarioId no código do CriarPost.jsx');
-        return;
-    }
-
     try {
       setLoading(true); 
-      setError(null);   
+      setError(null); 
 
-      const dadosPost = { titulo, texto, usuarioId };
-
+      const dadosPost = { titulo, texto };
       await criarNovoPost(dadosPost);
-
-      setTitulo('');
-      setTexto('');
-      
       navigate('/'); 
 
     } catch (err) {
-
       console.error('Erro ao criar post:', err);
-      setError('Falha ao criar o post. Verifique o backend ou tente novamente.');
+      
+      if (err.response && err.response.status === 401) {
+        setError('Você não está autorizado a criar posts. Faça login novamente.');
+
+      } else {
+        setError('Falha ao criar o post. Tente novamente.');
+      }
     } finally {
-      setLoading(false); 
+      setLoading(false);
     }
   };
 
-  // render do formulário
   return (
     <div>
       <h2>Criar Novo Post</h2>
@@ -77,8 +68,10 @@ const CriarPost = () => {
           />
         </div>
 
+        {/* Mensagens de erro amigáveis (Requisito) */}
         {error && <p style={{ color: 'red' }}>{error}</p>}
 
+        {/* Desabilita o botão durante o loading */}
         <button type="submit" disabled={loading}>
           {loading ? 'Salvando...' : 'Salvar Post'}
         </button>
